@@ -23,9 +23,9 @@ if (!mongoose.connection.readyState) {
 
 // User schema
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  password: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  id: { type: String, required: true, unique: true },
+  question: { type: String, required: true },
+  answer: { type: String, required: true },
 })
 
 // Remove password from JSON responses
@@ -36,7 +36,7 @@ userSchema.set('toJSON', {
   },
 })
 
-const User = mongoose.model('User', userSchema)
+const Question = mongoose.model('Donjon', userSchema)
 
 // POST /users → add new user
 app.post('/users', async (req, res) => {
@@ -66,9 +66,9 @@ app.post('/users', async (req, res) => {
 })
 
 // GET /users → fetch all users (without passwords)
-app.get('/users', async (req, res) => {
+app.get('/questions', async (req, res) => {
   try {
-    const users = await User.find({}, { password: 0 })
+    const users = await Question.find({})
     res.status(200).json(users)
   } catch (err) {
     console.error(err)
