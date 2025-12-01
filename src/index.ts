@@ -1,78 +1,42 @@
-import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import mongoose from 'mongoose'
-import dotenv from 'dotenv'
-import bcrypt from "bcryptjs"
+import mongoose from 'mongoose';
 
-dotenv.config()
+let isConnected = false;
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+// Connection handler
+async function connectDB() {
+  if (isConnected) return;
 
-const app = express()
-app.use(express.json())
+  const mongoURI = process.env.MONGODB_URI;
+  if (!mongoURI) throw new Error("Missing MONGODB_URI");
 
-// MongoDB connection
-const mongoURI = process.env.MONGODB_URI || ''
+  const db = await mongoose.connect(mongoURI, {
+    dbName: "Donjon"  // 👈 IMPORTANT !
+  });
 
-if (!mongoose.connection.readyState) {
-  await mongoose.connect(mongoURI)
-  console.log('Connected to MongoDB')
+  isConnected = db.connections[0].readyState === 1;
 }
 
-// User schema
-const userSchema = new mongoose.Schema({
+const questionSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   question: { type: String, required: true },
-  answer: { type: String, required: true },
-})
+  answer: { type: String, required: true }
+});
 
-// Remove password from JSON responses
-userSchema.set('toJSON', {
-  transform: function (doc, ret) {
-    return ret
-  },
-})
+const Question = mongoose.models.Questions || mongoose.model("Questions", questionSchema);
 
-const Question = mongoose.model('Questions', userSchema)
+// API Route
+export default async function handler(req, res) {
+  await connectDB();
 
-// // POST /users → add new user
-// app.post('/users', async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body
-
-//     if (!name || !email || !password) {
-//       return res.status(400).json({ error: 'name, email, and password are required' })
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10)
-
-//     const newUser = new User({
-//       name,
-//       email,
-//       password: hashedPassword,
-//     })
-
-//     await newUser.save()
-
-//     const userWithoutPassword = newUser.toJSON()
-//     res.status(201).json({ message: 'User added successfully', user: userWithoutPassword })
-//   } catch (err) {
-//     console.error(err)
-//     res.status(500).json({ error: 'Failed to add user' })
-//   }
-// })
-
-// GET /users → fetch all users (without passwords)
-app.get('/questions', async (req, res) => {
-  try {
-    const users = await Question.find({})
-    res.status(200).json(users)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Failed to fetch users' })
+  if (req.method === "GET") {
+    try {
+      const questions = await Question.find({});
+      return res.status(200).json(questions);
+    } catch (e) {
+      console.error(e);
+      return res.status(500).json({ error: "Error fetching questions" });
+    }
   }
-})
 
-export default app
+  res.status(405).json({ error: "Method not allowed" });
+}
