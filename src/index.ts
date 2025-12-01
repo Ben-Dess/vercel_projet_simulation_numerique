@@ -26,7 +26,6 @@ if (!mongoose.connection.readyState) {
 export const collections: { Questions?: mongoDB.Collection } = {}
 
 export async function connectToDatabase () {
-   dotenv.config();
 
    const client: mongoDB.MongoClient = new mongoDB.MongoClient(process.env.MONGODB_URI);
            
