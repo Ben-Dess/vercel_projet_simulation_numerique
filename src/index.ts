@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import bcrypt from "bcryptjs"
+import * as mongoDB from "mongodb";
+import * as dotenv from "dotenv";
 
 dotenv.config()
 
@@ -21,6 +23,23 @@ if (!mongoose.connection.readyState) {
   console.log('Connected to MongoDB')
 }
 
+export const collections: { Questions?: mongoDB.Collection } = {}
+
+export async function connectToDatabase () {
+   dotenv.config();
+
+   const client: mongoDB.MongoClient = new mongoDB.MongoClient(process.env.MONGODB_URI);
+           
+   await client.connect();
+       
+   const db: mongoDB.Db = client.db("Donjon");
+  
+   const gamesCollection: mongoDB.Collection = db.collection("Questions");
+
+ collections.Questions = gamesCollection;
+      
+        console.log(`Successfully connected to database: ${db.databaseName} and collection: ${gamesCollection.collectionName}`);
+}
 // User schema
 const userSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
