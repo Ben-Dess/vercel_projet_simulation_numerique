@@ -31,39 +31,38 @@ const userSchema = new mongoose.Schema({
 // Remove password from JSON responses
 userSchema.set('toJSON', {
   transform: function (doc, ret) {
-    delete ret.password
     return ret
   },
 })
 
-const Question = mongoose.model('Donjon', userSchema)
+const Question = mongoose.model('Questions', userSchema)
 
-// POST /users → add new user
-app.post('/users', async (req, res) => {
-  try {
-    const { name, email, password } = req.body
+// // POST /users → add new user
+// app.post('/users', async (req, res) => {
+//   try {
+//     const { name, email, password } = req.body
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'name, email, and password are required' })
-    }
+//     if (!name || !email || !password) {
+//       return res.status(400).json({ error: 'name, email, and password are required' })
+//     }
 
-    const hashedPassword = await bcrypt.hash(password, 10)
+//     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-    })
+//     const newUser = new User({
+//       name,
+//       email,
+//       password: hashedPassword,
+//     })
 
-    await newUser.save()
+//     await newUser.save()
 
-    const userWithoutPassword = newUser.toJSON()
-    res.status(201).json({ message: 'User added successfully', user: userWithoutPassword })
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Failed to add user' })
-  }
-})
+//     const userWithoutPassword = newUser.toJSON()
+//     res.status(201).json({ message: 'User added successfully', user: userWithoutPassword })
+//   } catch (err) {
+//     console.error(err)
+//     res.status(500).json({ error: 'Failed to add user' })
+//   }
+// })
 
 // GET /users → fetch all users (without passwords)
 app.get('/questions', async (req, res) => {
